@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import BookSearch from '../components/student/BookSearch';
+import AvailableBooks from '../components/student/AvailableBooks';
 import { fetchBooks } from '../services/studentBookService';
 import { getErrorMessage } from '../services/api';
 
 export default function StudentDashboard() {
   const [books, setBooks] = useState([]);
   const [search, setSearch] = useState('');
+  const [availableOnly, setAvailableOnly] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -16,7 +18,7 @@ export default function StudentDashboard() {
       setLoading(true);
       setError('');
       try {
-        const result = await fetchBooks({ search });
+        const result = await fetchBooks({ search, available: availableOnly });
         if (!cancelled) setBooks(result.books);
       } catch (err) {
         if (!cancelled) setError(getErrorMessage(err, 'Failed to load books'));
@@ -29,7 +31,7 @@ export default function StudentDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [search]);
+  }, [search, availableOnly]);
 
   return (
     <div>
@@ -37,25 +39,21 @@ export default function StudentDashboard() {
 
       <div className="card">
         <BookSearch onSearch={setSearch} loading={loading} />
+        <label className="row" style={{ marginTop: 12, fontSize: 14 }}>
+          <input
+            type="checkbox"
+            checked={availableOnly}
+            onChange={(e) => setAvailableOnly(e.target.checked)}
+          />
+          Show available books only
+        </label>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
 
       <div className="card">
-        <h2>Search results ({books.length})</h2>
-        {loading ? (
-          <p className="muted">Loading books...</p>
-        ) : books.length === 0 ? (
-          <p className="empty">No books found.</p>
-        ) : (
-          <ul>
-            {books.map((book) => (
-              <li key={book._id}>
-                {book.title} &mdash; {book.author}
-              </li>
-            ))}
-          </ul>
-        )}
+        <h2>Books ({books.length})</h2>
+        <AvailableBooks books={books} loading={loading} />
       </div>
     </div>
   );
