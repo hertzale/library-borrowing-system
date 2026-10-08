@@ -1,3 +1,9 @@
+import { Navigate } from 'react-router-dom';
+import LoginForm from '../components/student/LoginForm';
+
 export default function LoginPage() {
-  return <div className="card">Login page</div>;
+  if (localStorage.getItem('authToken')) {
+    return <Navigate to="/student" replace />;
+  }
+  return <LoginForm />;
 }
